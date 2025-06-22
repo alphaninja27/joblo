@@ -1,39 +1,52 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from transformers import AutoTokenizer, AutoModel
-import torch
+from pydantic import BaseModel
+from sentence_transformers import SentenceTransformer, util
+import weaviate
+import os
+from dotenv import load_dotenv
 
+# Load environment variables from .env file
+load_dotenv()
+
+# Load your Weaviate config
+WEAVIATE_URL = os.getenv("WEAVIATE_URL", "https://your-weaviate-instance.weaviate.network")
+WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY")
+
+# Initialize Sentence Transformer model
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+# Initialize FastAPI app
 app = FastAPI()
 
-# Allow CORS for frontend
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://joblo-delta.vercel.app/"],  # Replace with frontend URL in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Load model & tokenizer
-tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
-model = AutoModel.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
+# Request schema
+class MatchRequest(BaseModel):
+    query: str
 
-def get_embedding(text: str):
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
-    with torch.no_grad():
-        outputs = model(**inputs)
-    return outputs.last_hidden_state.mean(dim=1).squeeze().tolist()
-
-@app.get("/")
-def root():
-    return {"message": "API is up!"}
+# Setup Weaviate client
+client = weaviate.Client(
+    url=WEAVIATE_URL,
+    auth_client_secret=weaviate.AuthApiKey(api_key=WEAVIATE_API_KEY),
+    additional_headers={"X-OpenAI-Api-Key": os.getenv("OPENAI_API_KEY")},
+)
 
 @app.post("/api/match")
-async def match(request: Request):
-    body = await request.json()
-    query = body.get("query", "")
-    if not query:
-        return {"error": "Query is required"}
+def match_jobs(req: MatchRequest):
+    query = req.query
+    query_embedding = model.encode(query).tolist()
 
-    embedding = get_embedding(query)
-    return {"embedding": embedding}
+    response = client.query.get("Job", ["title", "company", "description", "link"]).with_near_vector({
+        "vector": query_embedding
+    }).with_limit(5).do()
+
+    results = response["data"]["Get"]["Job"]
+    return {"results": results}
