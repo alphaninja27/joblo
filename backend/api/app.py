@@ -7,13 +7,18 @@ from functools import lru_cache
 from sentence_transformers import SentenceTransformer
 
 app = FastAPI()
-@lru_cache()
-def get_model():
-    return SentenceTransformer("paraphrase-albert-small-v2")  # smaller & faster
+from transformers import AutoTokenizer, AutoModel
+import torch
 
-@app.post("/api/match")
-async def match_jobs(request: Request):
-    model = get_model()
+tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
+model = AutoModel.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
+
+def embed(text):
+    inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+    with torch.no_grad():
+        outputs = model(**inputs)
+        embeddings = outputs.last_hidden_state.mean(dim=1)
+    return embeddings.numpy()
 
 # Allow frontend to call backend
 app.add_middleware(
