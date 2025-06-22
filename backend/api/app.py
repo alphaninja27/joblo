@@ -1,24 +1,21 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from sentence_transformers import SentenceTransformer
 from weaviate import WeaviateClient
 from weaviate.connect import ConnectionParams
-from functools import lru_cache
-from sentence_transformers import SentenceTransformer
-
-app = FastAPI()
 from transformers import AutoTokenizer, AutoModel
 import torch
+
+app = FastAPI()
 
 tokenizer = AutoTokenizer.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
 model = AutoModel.from_pretrained("sentence-transformers/all-MiniLM-L6-v2")
 
-def embed(text):
-    inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+def get_embedding(text: str) -> list:
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True)
     with torch.no_grad():
         outputs = model(**inputs)
-        embeddings = outputs.last_hidden_state.mean(dim=1)
-    return embeddings.numpy()
+        return outputs.last_hidden_state.mean(dim=1).squeeze().tolist()
+
 
 # Allow frontend to call backend
 app.add_middleware(
