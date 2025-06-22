@@ -5,7 +5,7 @@ from weaviate import WeaviateClient
 from weaviate.connect import ConnectionParams
 
 app = FastAPI()
-model = SentenceTransformer("all-MiniLM-L6-v2")
+model = SentenceTransformer("paraphrase-MiniLM-L3-v2")
 
 # Allow frontend to call backend
 app.add_middleware(
