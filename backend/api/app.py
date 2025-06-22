@@ -3,9 +3,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from sentence_transformers import SentenceTransformer
 from weaviate import WeaviateClient
 from weaviate.connect import ConnectionParams
+from functools import lru_cache
+from sentence_transformers import SentenceTransformer
 
 app = FastAPI()
-model = SentenceTransformer("paraphrase-MiniLM-L3-v2")
+@lru_cache()
+def get_model():
+    return SentenceTransformer("paraphrase-albert-small-v2")  # smaller & faster
+
+@app.post("/api/match")
+async def match_jobs(request: Request):
+    model = get_model()
 
 # Allow frontend to call backend
 app.add_middleware(
