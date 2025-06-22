@@ -1,0 +1,13 @@
+# Ignore Python virtualenv
+venv/
+__pycache__/
+
+# Ignore node_modules and build output
+frontend/node_modules/
+frontend/dist/
+backend/__pycache__/
+*.pyc
+
+# Editor junk
+.DS_Store
+*.log
