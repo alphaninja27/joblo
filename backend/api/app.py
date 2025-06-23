@@ -12,9 +12,9 @@ load_dotenv()
 WEAVIATE_URL = os.getenv("WEAVIATE_URL")
 WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY")
 
-# Initialize Weaviate Client (v4+ compatible)
+# ✅ FIXED: Corrected from `from_parameters` to `from_params`
 client = WeaviateClient(
-    connection_params=ConnectionParams.from_parameters(
+    connection_params=ConnectionParams.from_params(
         http_host=WEAVIATE_URL,
         http_port=443,
         http_secure=True,
@@ -23,6 +23,7 @@ client = WeaviateClient(
 )
 
 app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
