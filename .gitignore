@@ -11,3 +11,5 @@ backend/__pycache__/
 # Editor junk
 .DS_Store
 *.log
+
+.env
