@@ -6,24 +6,20 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const searchJobs = async () => {
-  console.log("🔍 Search triggered");
     setLoading(true);
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/match`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query }),
+        body: JSON.stringify({ query })
       });
 
-      if (!res.ok) {
-        throw new Error("❌ API error: " + res.status);
-      }
+      if (!res.ok) throw new Error("Failed to fetch results");
 
       const data = await res.json();
-      console.log("✅ API Response:", data);
       setResults(data);
     } catch (err) {
-      console.error("❌ Search failed:", err);
+      console.error("❌ Error searching jobs:", err);
     } finally {
       setLoading(false);
     }
