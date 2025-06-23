@@ -1,44 +1,30 @@
-import os
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from dotenv import load_dotenv
+import weaviate
 from weaviate.client import WeaviateClient
-from weaviate.connect import ConnectionParams
+from weaviate.classes.config import AdditionalConfig
+from weaviate.classes.init import ConnectionParams, AuthApiKey
+import os
+from dotenv import load_dotenv
 
 load_dotenv()
 
-# Environment Variables
+app = FastAPI()
+
 WEAVIATE_URL = os.getenv("WEAVIATE_URL")
 WEAVIATE_API_KEY = os.getenv("WEAVIATE_API_KEY")
 
-# ✅ FIXED: Corrected from `from_parameters` to `from_params`
+# Correct client connection setup
+auth = AuthApiKey(api_key=WEAVIATE_API_KEY)
+connection_params = ConnectionParams.from_params(
+    http_host=WEAVIATE_URL,
+    auth_client_secret=auth,
+)
+
 client = WeaviateClient(
-    connection_params=ConnectionParams.from_params(
-        http_host=WEAVIATE_URL,
-        http_port=443,
-        http_secure=True,
-        auth_credentials={"apiKey": WEAVIATE_API_KEY}
-    )
+    connection_params=connection_params,
+    additional_config=AdditionalConfig(timeout=30)
 )
 
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"]
-)
-
-class MatchRequest(BaseModel):
-    query: str
-
-@app.post("/api/match")
-async def match_jobs(req: MatchRequest):
-    result = client.collections.get("Job").query.bm25(
-        query=req.query,
-        limit=5,
-        properties=["title", "company", "location", "skills", "url"]
-    )
-    return {"results": [obj.properties for obj in result.objects]}
+@app.get("/")
+def root():
+    return {"status": "Weaviate backend running ✅"}
