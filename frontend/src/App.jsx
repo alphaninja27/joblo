@@ -5,10 +5,13 @@ function App() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Fallback to current origin if VITE_API_URL is undefined
+  const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
+
   const searchJobs = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/match`, {
+      const res = await fetch(`${API_URL}/api/match`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query })
