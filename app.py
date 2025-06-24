@@ -1,58 +1,33 @@
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import json
 import os
-import faiss
+import json
 import numpy as np
-import cohere
+from fastapi import FastAPI
+from pydantic import BaseModel
+from sentence_transformers import SentenceTransformer
 
-# Load environment
-from dotenv import load_dotenv
-load_dotenv()
-
-co = cohere.Client(os.getenv("COHERE_API_KEY"))
-
-app = FastAPI()
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Load job data
+# Load model and vectors
+model = SentenceTransformer("all-MiniLM-L6-v2")
 with open("public/job_vectors.json", "r") as f:
     job_data = json.load(f)
+job_vectors = np.array([job["embedding"] for job in job_data], dtype="float32")
 
-texts = [job["text"] for job in job_data]
-metadata = [job["metadata"] for job in job_data]
-
-# Generate FAISS index
-dimensions = 384  # Cohere embeds to 768-dim vectors
-
-
-index = faiss.IndexFlatL2(dimensions)
-
-vectors = np.array([job["embedding"] for job in job_data]).astype("float32")
-index.add(vectors)
+app = FastAPI()
 
 class Query(BaseModel):
     query: str
 
-@app.post("/api/match")
-async def match(query: Query):
-    response = co.embed(
-        texts=[query.query],
-        model="embed-english-v3.0",
-        input_type="search_query"
-    )
-    query_vector = np.array(response.embeddings[0]).astype("float32").reshape(1, -1)
-    distances, indices = index.search(query_vector, k=5)
+# Cosine similarity
+def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
+    return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
 
+@app.post("/api/match")
+def match(q: Query):
+    q_vec = model.encode(q.query, convert_to_numpy=True).astype("float32")
+    scores = [cosine_similarity(q_vec, vec) for vec in job_vectors]
+    top_idxs = np.argsort(scores)[::-1][:5]
     results = []
-    for idx in indices[0]:
-        results.append(metadata[idx])
+    for idx in top_idxs:
+        job = job_data[idx].copy()
+        job["score"] = scores[idx]
+        results.append(job)
     return results
