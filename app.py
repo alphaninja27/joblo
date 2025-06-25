@@ -4,6 +4,26 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 import json
 import os
+import time
+from fastapi import Request
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+
+app = FastAPI()
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    response = await call_next(request)
+    process_time = time.time() - start_time
+
+    logging.info(
+        f"{request.method} {request.url.path} completed in {process_time:.2f}s with status {response.status_code}"
+    )
+    return response
+
 
 # Load the job vectors and metadata
 with open("public/job_vectors.json", "r") as f:
