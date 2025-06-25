@@ -5,20 +5,21 @@ function App() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Fallback to current origin if VITE_API_URL is undefined
-  const API_URL = import.meta.env.VITE_API_URL || window.location.origin;
-
   const searchJobs = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/match`, {
+      // Pick from env or fallback to window origin
+      const apiUrl = import.meta.env.VITE_API_URL || window.location.origin;
+      const cleanUrl = apiUrl.replace(/\/$/, '');
+      console.log("👉 Using API URL:", cleanUrl);
+
+      const res = await fetch(`${cleanUrl}/api/match`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query })
       });
 
-      if (!res.ok) throw new Error("Failed to fetch results");
-
+      if (!res.ok) throw new Error(`❌ Failed to fetch: ${res.status}`);
       const data = await res.json();
       setResults(data);
     } catch (err) {
@@ -57,7 +58,9 @@ function App() {
             <h2 className="text-xl font-semibold">{job.title} at {job.company}</h2>
             <p className="text-gray-600">{job.location}</p>
             <p className="text-sm mt-2 text-gray-800">{job.description}</p>
-            <a href={job.url} className="text-blue-600 mt-2 inline-block">View Job</a>
+            <a href={job.url} className="text-blue-600 mt-2 inline-block" target="_blank" rel="noopener noreferrer">
+              View Job
+            </a>
           </div>
         ))}
       </div>
