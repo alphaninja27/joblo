@@ -3,56 +3,64 @@ import numpy as np
 import json
 import os
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
-jobs = [
+job_descriptions = [
     {
         "title": "Senior Software Engineer",
-        "company": "TechCorp",
+        "company": "Acme Corp",
         "location": "Remote",
-        "description": "Senior Software Engineer with experience in backend development using Python and Django.",
+        "description": "Backend development using Python and Django.",
         "url": "https://example.com/job1"
     },
     {
         "title": "Frontend Developer",
-        "company": "DesignPro",
+        "company": "Beta Ltd",
         "location": "Bangalore",
-        "description": "Frontend Developer with strong skills in React, TypeScript, and CSS.",
+        "description": "React, TypeScript, and CSS expertise needed.",
         "url": "https://example.com/job2"
     },
     {
         "title": "Data Scientist",
-        "company": "DataWiz",
+        "company": "DataWorks",
         "location": "Remote",
-        "description": "Data Scientist role requiring experience in machine learning, Python, and SQL.",
+        "description": "Machine learning, Python, and SQL.",
         "url": "https://example.com/job3"
     },
     {
         "title": "DevOps Engineer",
-        "company": "DeployHub",
-        "location": "Mumbai",
-        "description": "DevOps Engineer with knowledge of AWS, Docker, and CI/CD pipelines.",
+        "company": "InfraCloud",
+        "location": "Delhi",
+        "description": "AWS, Docker, CI/CD pipelines experience.",
         "url": "https://example.com/job4"
     },
     {
         "title": "Full Stack Developer",
-        "company": "BuildIt",
-        "location": "Hyderabad",
-        "description": "Full Stack Developer proficient in Node.js, React, and MongoDB.",
+        "company": "TechGen",
+        "location": "Remote",
+        "description": "Node.js, React, and MongoDB.",
         "url": "https://example.com/job5"
     }
 ]
 
-descriptions = [job["description"] for job in jobs]
-embeddings = model.encode(descriptions, convert_to_numpy=True)
+# Prepare text for embeddings
+texts = [f"{job['title']} at {job['company']}. {job['description']}" for job in job_descriptions]
+vectors = model.encode(texts, convert_to_numpy=True)
 
-job_data = []
-for job, emb in zip(jobs, embeddings):
-    job["embedding"] = emb.tolist()
-    job_data.append(job)
+# Construct the final structure
+data = [
+    {
+        "embedding": vector.tolist(),
+        "metadata": job
+    }
+    for job, vector in zip(job_descriptions, vectors)
+]
 
+# Ensure public/ directory exists
 os.makedirs("public", exist_ok=True)
-with open("public/job_vectors.json", "w") as f:
-    json.dump(job_data, f, indent=2)
 
-print("✅ job_vectors.json created with embeddings.")
+# Save to public/job_vectors.json
+with open("public/job_vectors.json", "w") as f:
+    json.dump(data, f, indent=2)
+
+print("✅ job_vectors.json created successfully.")
