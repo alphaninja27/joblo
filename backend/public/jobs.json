@@ -1,0 +1,72 @@
+[
+  {
+    "title": "Software Engineer",
+    "company": "TCS",
+    "location": "Bangalore",
+    "description": "Backend Python Developer.",
+    "url": "https://tcs.com/jobs/123"
+  },
+  {
+    "title": "Frontend Engineer",
+    "company": "Infosys",
+    "location": "Remote",
+    "description": "React developer with strong UI skills.",
+    "url": "https://infosys.com/jobs/456"
+  },
+  {
+    "title": "Data Scientist",
+    "company": "Naukri.com",
+    "location": "Gurgaon",
+    "description": "Experience with ML models.",
+    "url": "https://naukri.com/viewjob?id=ds1"
+  },
+  {
+    "title": "DevOps Engineer",
+    "company": "Zoho",
+    "location": "Chennai",
+    "description": "Docker, Kubernetes, AWS.",
+    "url": "https://zoho.com/careers/devops"
+  },
+  {
+    "title": "AI Researcher",
+    "company": "Google",
+    "location": "Hyderabad",
+    "description": "Work on cutting-edge ML.",
+    "url": "https://careers.google.com/jobs/ai"
+  },
+  {
+    "title": "QA Tester",
+    "company": "Flipkart",
+    "location": "Bangalore",
+    "description": "Manual + automation testing.",
+    "url": "https://flipkartcareers.com/qa"
+  },
+  {
+    "title": "Product Manager",
+    "company": "Amazon",
+    "location": "Remote",
+    "description": "Experience in e-commerce domain.",
+    "url": "https://amazon.jobs/pm"
+  },
+  {
+    "title": "Security Analyst",
+    "company": "Paytm",
+    "location": "Noida",
+    "description": "Security threat assessment.",
+    "url": "https://paytm.com/careers/sec"
+  },
+  {
+    "title": "Data Engineer",
+    "company": "Reliance Jio",
+    "location": "Mumbai",
+    "description": "Big data pipelines.",
+    "url": "https://careers.jio.com/dataeng"
+  },
+  {
+    "title": "ML Engineer",
+    "company": "Byju's",
+    "location": "Bangalore",
+    "description": "Model deployment experience.",
+    "url": "https://byjus.com/careers/ml"
+  }
+]
