@@ -1,29 +1,58 @@
 from sentence_transformers import SentenceTransformer
+import numpy as np
 import json
 import os
 
-INPUT_FILE = "public/jobs.json"
-OUTPUT_FILE = "public/job_vectors.json"
+model = SentenceTransformer('all-MiniLM-L6-v2')
 
-model = SentenceTransformer("all-MiniLM-L6-v2")
+jobs = [
+    {
+        "title": "Senior Software Engineer",
+        "company": "TechCorp",
+        "location": "Remote",
+        "description": "Senior Software Engineer with experience in backend development using Python and Django.",
+        "url": "https://example.com/job1"
+    },
+    {
+        "title": "Frontend Developer",
+        "company": "DesignPro",
+        "location": "Bangalore",
+        "description": "Frontend Developer with strong skills in React, TypeScript, and CSS.",
+        "url": "https://example.com/job2"
+    },
+    {
+        "title": "Data Scientist",
+        "company": "DataWiz",
+        "location": "Remote",
+        "description": "Data Scientist role requiring experience in machine learning, Python, and SQL.",
+        "url": "https://example.com/job3"
+    },
+    {
+        "title": "DevOps Engineer",
+        "company": "DeployHub",
+        "location": "Mumbai",
+        "description": "DevOps Engineer with knowledge of AWS, Docker, and CI/CD pipelines.",
+        "url": "https://example.com/job4"
+    },
+    {
+        "title": "Full Stack Developer",
+        "company": "BuildIt",
+        "location": "Hyderabad",
+        "description": "Full Stack Developer proficient in Node.js, React, and MongoDB.",
+        "url": "https://example.com/job5"
+    }
+]
 
-with open(INPUT_FILE, "r", encoding="utf-8") as f:
-    jobs = json.load(f)
+descriptions = [job["description"] for job in jobs]
+embeddings = model.encode(descriptions, convert_to_numpy=True)
 
-job_vectors = []
-for job in jobs:
-    text = f"{job['title']} at {job['company']}. {job['description']}"
-    vector = model.encode(text).tolist()
-    job_vectors.append({
-        "title": job["title"],
-        "company": job["company"],
-        "location": job.get("location", ""),
-        "description": job["description"],
-        "url": job.get("url", ""),
-        "vector": vector
-    })
+job_data = []
+for job, emb in zip(jobs, embeddings):
+    job["embedding"] = emb.tolist()
+    job_data.append(job)
 
-with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-    json.dump(job_vectors, f, indent=2)
+os.makedirs("public", exist_ok=True)
+with open("public/job_vectors.json", "w") as f:
+    json.dump(job_data, f, indent=2)
 
-print("✅ job_vectors.json generated successfully.")
+print("✅ job_vectors.json created with embeddings.")
