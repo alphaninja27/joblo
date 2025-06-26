@@ -1,36 +1,20 @@
-from sentence_transformers import SentenceTransformer
-from weaviate import WeaviateClient
-from weaviate.connect import ConnectionParams
+import requests
+import json
 
-# Initialize embedder
-model = SentenceTransformer("all-MiniLM-L6-v2")
+def search_jobs(prompt):
+    res = requests.post("https://joblo-1bvy.onrender.com/api/match", json={"query": prompt})
+    if res.ok:
+        jobs = res.json()
+        if not jobs:
+            print("❌ No matching jobs found.")
+            return
+        print("\n✅ Top Matching Jobs:\n")
+        for i, job in enumerate(jobs, 1):
+            print(f"{i}. {job['title']} at {job['company']} ({job['location']})")
+            print(f"   🔗 {job['url']}\n")
+    else:
+        print("❌ API Error:", res.status_code)
 
-# User query (can replace this with resume text or CLI input)
-query = input("🔍 Enter job query or resume text:\n> ")
-
-query_vector = model.encode(query)
-
-# Connect to Weaviate
-client = WeaviateClient(
-    connection_params=ConnectionParams.from_url("http://localhost:8080", grpc_port=50051)
-)
-client.connect()
-
-collection = client.collections.get("Job")
-
-# Search top 5 semantically closest
-results = collection.query.near_vector(
-    near_vector=query_vector,
-    limit=5
-)
-
-print("\n🎯 Top Matching Jobs:")
-for job in results.objects:
-    props = job.properties
-    print(f"\n📌 {props['title']} at {props['company']}")
-    print(f"   📍 {props['location']}")
-    print(f"   🔗 {props['url']}")
-    print(f"   💡 Skills: {', '.join(props['skills'])}")
-    print(f"   📝 {props['description']}")
-
-client.close()
+if __name__ == "__main__":
+    query = input("🔍 Enter your job query: ")
+    search_jobs(query)
