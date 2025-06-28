@@ -1,8 +1,4 @@
-Sure! Here's a complete `README.md` you can copy-paste as-is into your project root:
 
----
-
-```markdown
 # 🧠 Joblo - Smart Job Matcher
 
 Joblo is an intelligent job-matching platform that scrapes jobs from multiple sources, embeds them semantically, and ranks results based on natural-language queries.
